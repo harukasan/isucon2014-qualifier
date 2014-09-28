@@ -184,7 +184,7 @@ module Isucon4
 
     get '/mypage' do
       unless current_user
-        flash[:notice] = "You must be logged in"
+        redirect '/?out=4'
         redirect '/'
       end
 
