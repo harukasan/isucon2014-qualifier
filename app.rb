@@ -14,6 +14,8 @@ class Rack::CommonLogger
   end
 end
 
+GC.disable
+
 module Isucon4
   class App < Sinatra::Base
     # use Rack::Lineprof, profile: 'app.rb'
