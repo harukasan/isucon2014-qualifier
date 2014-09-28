@@ -5,6 +5,7 @@ require 'rack-flash'
 require 'json'
 require 'redis'
 require './index_templates'
+require './mypage_templates'
 require 'rack-lineprof'
 
 module Isucon4
@@ -186,7 +187,8 @@ module Isucon4
         flash[:notice] = "You must be logged in"
         redirect '/'
       end
-      erb :mypage, layout: :base
+
+      return gen_mypage(last_login)
     end
 
     get '/report' do
