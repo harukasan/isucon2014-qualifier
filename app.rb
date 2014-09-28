@@ -191,7 +191,6 @@ module Isucon4
     get '/mypage' do
       unless current_user
         redirect '/?out=4'
-        redirect '/'
       end
 
       return gen_mypage(last_login)
