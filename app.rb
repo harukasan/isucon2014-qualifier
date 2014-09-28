@@ -167,6 +167,8 @@ module Isucon4
         flash[:notice] = "You must be logged in"
         redirect '/'
       end
+      @last_login = last_login
+
       erb :mypage, layout: :base
     end
 
