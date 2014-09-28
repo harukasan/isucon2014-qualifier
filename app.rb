@@ -46,20 +46,23 @@ module Isucon4
                   " VALUES (?,?,?,?,?)",
                  Time.now, user_id, login, request.ip, succeeded ? 1 : 0)
 
-        if succeeded
-          redis.set "ip_fail:#{request.ip}", "0"
-        else
-          redis.incr "ip_fail:#{request.ip}"
-        end
-        if user_id
+
+        redis.pipelined do
           if succeeded
-            redis.set "user_fail:#{user_id}", "0"
+            redis.set "ip_fail:#{request.ip}", "0"
           else
-            redis.incr "user_fail:#{user_id}"
+            redis.incr "ip_fail:#{request.ip}"
           end
-        end
-        if succeeded
-          redis.rpush "last_login:#{user_id}", {'created_at' => now.strftime("%Y-%m-%d %H:%M:%S"), 'ip' => request.ip}.to_json
+          if user_id
+            if succeeded
+              redis.set "user_fail:#{user_id}", "0"
+            else
+              redis.incr "user_fail:#{user_id}"
+            end
+          end
+          if succeeded
+            redis.rpush "last_login:#{user_id}", {'created_at' => now.strftime("%Y-%m-%d %H:%M:%S"), 'ip' => request.ip}.to_json
+          end
         end
       end
 
@@ -75,7 +78,7 @@ module Isucon4
       end
 
       def ip_banned?
-        log = db.xquery("SELECT COUNT(1) AS failures FROM login_log WHERE ip = ? AND id > IFNULL((select id from login_log where ip = ? AND succeeded = 1 ORDER BY id DESC LIMIT 1), 0);", request.ip, request.ip).first
+        # log = db.xquery("SELECT COUNT(1) AS failures FROM login_log WHERE ip = ? AND id > IFNULL((select id from login_log where ip = ? AND succeeded = 1 ORDER BY id DESC LIMIT 1), 0);", request.ip, request.ip).first
         ip_fail = redis.get("ip_fail:#{request.ip}").to_i
         # puts "#{log['failures']} == #{ip_fail}" unless log['failures'] == ip_fail
         log = { 'failures' => ip_fail }
@@ -112,13 +115,16 @@ module Isucon4
         return @current_user if @current_user
         return nil unless session[:user_id]
 
-        @current_user = db.xquery('SELECT * FROM users WHERE id = ?', session[:user_id].to_i).first
-        unless @current_user
-          session[:user_id] = nil
-          return nil
-        end
+        return current_user = {
+          'id' => session[:user_id],
+        }
 
-        @current_user
+        # @current_user = db.xquery('SELECT * FROM users WHERE id = ?', session[:user_id].to_i).first
+        #unless @current_user
+        #  session[:user_id] = nil
+        #  return nil
+        #end
+        # @current_user
       end
 
       def last_login
