@@ -6,3 +6,6 @@ gem "mysql2-cs-bind"
 gem "rack-flash3"
 gem "unicorn"
 gem "foreman"
+gem 'redis'
+
+gem 'sinatra-contrib'
