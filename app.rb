@@ -8,6 +8,12 @@ require './index_templates'
 require './mypage_templates'
 require 'rack-lineprof'
 
+class Rack::CommonLogger
+  def call(env)
+    @app.call(env)
+  end
+end
+
 module Isucon4
   class App < Sinatra::Base
     # use Rack::Lineprof, profile: 'app.rb'
