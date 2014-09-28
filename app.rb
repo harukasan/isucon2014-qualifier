@@ -4,9 +4,12 @@ require 'mysql2-cs-bind'
 require 'rack-flash'
 require 'json'
 require 'redis'
+require './index_templates'
+require 'rack-lineprof'
 
 module Isucon4
   class App < Sinatra::Base
+    # use Rack::Lineprof, profile: 'app.rb'
     use Rack::Session::Cookie, secret: ENV['ISU4_SESSION_SECRET'] || 'shirokane'
     use Rack::Flash
     set :public_folder, File.expand_path('../../public', __FILE__)
@@ -152,7 +155,12 @@ module Isucon4
     end
 
     get '/' do
-      erb :index, layout: :base
+      if flash[:notice]
+        return INDEX_HTML_WITH_FLASH.gsub("{{flash}}", flash[:notice])
+      else
+        return INDEX_HTML
+      end
+      # erb :index, layout: :base
     end
 
     post '/login' do

@@ -9,3 +9,4 @@ gem "foreman"
 gem 'redis'
 
 gem 'sinatra-contrib'
+gem 'rack-lineprof', github: 'kainosnoema/rack-lineprof'

@@ -14,7 +14,7 @@
 </div>
 
 <% if flash[:notice] %>
-  <div id="notice-message" class="alert alert-danger" role="alert"><%= flash[:notice] %></div>
+  <div id="notice-message" class="alert alert-danger" role="alert"><%= request.cookies['flash'] %></div>
 <% end %>
 
 <div class="container">
