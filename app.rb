@@ -44,12 +44,12 @@ module Isucon4
       end
 
       def login_log(succeeded, login, user_id = nil)
-        # now = Time.now
-        now = "2014-09-28 02:41:41 +0000"
+        now = Time.now
+        # now = "2014-09-28 02:41:41 +0000"
         db.xquery("INSERT INTO login_log" \
                   " (`created_at`, `user_id`, `login`, `ip`, `succeeded`)" \
                   " VALUES (?,?,?,?,?)",
-                 Time.now, user_id, login, request.ip, succeeded ? 1 : 0)
+                 now, user_id, login, request.ip, succeeded ? 1 : 0)
 
 
         if succeeded
