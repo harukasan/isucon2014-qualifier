@@ -17,8 +17,6 @@ end
 module Isucon4
   class App < Sinatra::Base
     # use Rack::Lineprof, profile: 'app.rb'
-    use Rack::Session::Cookie, secret: ENV['ISU4_SESSION_SECRET'] || 'shirokane'
-    use Rack::Flash
     set :public_folder, File.expand_path('../../public', __FILE__)
     disable :logging
 
@@ -100,10 +98,9 @@ module Isucon4
       end
 
       def current_user
-        return @current_user if @current_user
-        return nil unless session[:user_id]
+        return nil unless request.cookies['user_secret_id']
         return current_user = {
-          'id' => session[:user_id],
+          'id' => request.cookies['user_secret_id'],
         }
       end
 
@@ -163,18 +160,13 @@ module Isucon4
     end
 
     get '/' do
-      if flash[:notice]
-        return INDEX_HTML_WITH_FLASH.gsub("{{flash}}", flash[:notice])
-      else
-        return INDEX_HTML
-      end
       # erb :index, layout: :base
     end
 
     post '/login' do
       user, err = attempt_login(params[:login], params[:password])
       if user
-        session[:user_id] = user['id']
+        response.set_cookie 'user_secret_id', user['id']
         redirect '/mypage'
       else
         case err
