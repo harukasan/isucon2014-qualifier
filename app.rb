@@ -47,42 +47,19 @@ module Isucon4
                  Time.now, user_id, login, request.ip, succeeded ? 1 : 0)
 
 
-        redis.pipelined do
-          if succeeded
-            redis.set "ip_fail:#{request.ip}", "0"
-          else
-            redis.incr "ip_fail:#{request.ip}"
-          end
-          if user_id
-            if succeeded
-              redis.set "user_fail:#{user_id}", "0"
-            else
-              redis.incr "user_fail:#{user_id}"
-            end
-          end
-          if succeeded
-            redis.rpush "last_login:#{user_id}", {'created_at' => now.strftime("%Y-%m-%d %H:%M:%S"), 'ip' => request.ip}.to_json
-          end
+        if succeeded
+          redis.rpush "last_login:#{user_id}", {'created_at' => now.strftime("%Y-%m-%d %H:%M:%S"), 'ip' => request.ip}.to_json
         end
       end
 
       def user_locked?(user)
         return nil unless user
-        #log = db.xquery("SELECT COUNT(1) AS failures FROM login_log WHERE user_id = ? AND id > IFNULL((select id from login_log where user_id = ? AND succeeded = 1 ORDER BY id DESC LIMIT 1), 0);", user['id'], user['id']).first
-        #log = {}
-        user_fail = redis.get("user_fail:#{user['id']}").to_i
-        log = { 'failures' => user_fail }
-        # puts "#{log['failures']} == #{user_fail}" unless log['failures'] == user_fail
-
+        log = db.xquery("SELECT COUNT(1) AS failures FROM login_log WHERE user_id = ? AND id > IFNULL((select id from login_log where user_id = ? AND succeeded = 1 ORDER BY id DESC LIMIT 1), 0);", user['id'], user['id']).first
         config[:user_lock_threshold] <= log['failures']
       end
 
       def ip_banned?
-        # log = db.xquery("SELECT COUNT(1) AS failures FROM login_log WHERE ip = ? AND id > IFNULL((select id from login_log where ip = ? AND succeeded = 1 ORDER BY id DESC LIMIT 1), 0);", request.ip, request.ip).first
-        ip_fail = redis.get("ip_fail:#{request.ip}").to_i
-        # puts "#{log['failures']} == #{ip_fail}" unless log['failures'] == ip_fail
-        log = { 'failures' => ip_fail }
-
+        log = db.xquery("SELECT COUNT(1) AS failures FROM login_log WHERE ip = ? AND id > IFNULL((select id from login_log where ip = ? AND succeeded = 1 ORDER BY id DESC LIMIT 1), 0);", request.ip, request.ip).first
         config[:ip_ban_threshold] <= log['failures']
       end
 
@@ -114,17 +91,9 @@ module Isucon4
       def current_user
         return @current_user if @current_user
         return nil unless session[:user_id]
-
         return current_user = {
           'id' => session[:user_id],
         }
-
-        # @current_user = db.xquery('SELECT * FROM users WHERE id = ?', session[:user_id].to_i).first
-        #unless @current_user
-        #  session[:user_id] = nil
-        #  return nil
-        #end
-        # @current_user
       end
 
       def last_login
