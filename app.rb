@@ -173,13 +173,12 @@ module Isucon4
       else
         case err
         when :locked
-          flash[:notice] = "This account is locked."
+          redirect '/?out=3'
         when :banned
-          flash[:notice] = "You're banned."
+          redirect '/?out=1'
         else
-          flash[:notice] = "Wrong username or password"
+          redirect '/?out=2'
         end
-        redirect '/'
       end
     end
 
