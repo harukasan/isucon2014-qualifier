@@ -1,4 +1,4 @@
-isucon2014 qualifier
+ISUCON2014 qualifier
 =====================
 
 working repo of "椅子子" for ISUCON4 quorifier.
@@ -29,11 +29,9 @@ sudo sysctl -p
 
 ## Copyright
 
-Copyright 2014 Shunsuke MICHII and contributors.
+Copyright 2014 Shunsuke MICHII and contributors. Licensed under MIT License.
 
-This code is licensed under MIT License.
-
-This code is based on the reference ruby implementation of the ISUCON4 quorifier. Original codes are copyrighted below:
+This codes are based on the reference ruby implementation of the ISUCON4 quorifier. Original codes are copyrighted below:
 
 ### Original Copyright: 
 
